@@ -15,6 +15,7 @@ public class Coin {
 
     public Coin() {
         random = new Random();
+//        flipCoin();
     }
 
     public void flipCoin() {

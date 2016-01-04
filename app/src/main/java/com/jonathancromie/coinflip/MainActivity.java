@@ -1,28 +1,47 @@
 package com.jonathancromie.coinflip;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.os.Handler;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final String SHAREDPREFFILE = "temp";
+
     private Coin coin;
+    private FlipCoin handler;
 
-    private TextView txtDisplay;
-    private TextView txtNumberOfFlips;
-    private TextView txtAmount;
-    private Button btnFlip;
-    private Button btnReset;
+    private TextView txtResult;
+    private TextView txtChoice;
 
-    private int numberOfFlips = 0;
-    private int amount = 0;
+    private TextView txtPlayer;
+    private TextView txtComputer;
+    private Button btnHeads;
+    private Button btnTails;
+
+    ImageView imgCoin;
+
+    private int numberOfRounds = 0;
+    private int playerAmount = 0;
+    private int computerAmount = 10;
+
+    private int playerWin = 0;
+    private int computerWin = 0;
+
+    private boolean isClicked = false;
+    private boolean isHeads = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,65 +50,62 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-
         coin = new Coin();
 
-        txtDisplay = (TextView) findViewById(R.id.txtDisplay);
-        txtNumberOfFlips = (TextView) findViewById(R.id.txtNumberOfFlips);
-        txtAmount = (TextView) findViewById(R.id.txtAmount);
-        btnFlip = (Button) findViewById(R.id.btnFlip);
-        btnFlip.setOnClickListener(new View.OnClickListener() {
+        imgCoin = (ImageView) findViewById(R.id.imgCoin);
+        final Animation coinFlip = AnimationUtils.loadAnimation(this, R.anim.animation_coin_flip);
+        handler = new FlipCoin(imgCoin, coinFlip);
+
+        txtResult = (TextView) findViewById(R.id.txtResult);
+        txtChoice = (TextView) findViewById(R.id.txtChoice);
+
+        txtResult.setText("Flip the Coin");
+
+        txtPlayer = (TextView) findViewById(R.id.txtPlayer);
+        txtComputer = (TextView) findViewById(R.id.txtComputer);
+
+        txtPlayer.setText(String.valueOf(playerAmount));
+        txtComputer.setText(String.valueOf(computerAmount));
+
+        btnHeads = (Button) findViewById(R.id.btnHeads);
+        btnTails = (Button) findViewById(R.id.btnTails);
+
+        btnHeads.setEnabled(false);
+        btnTails.setEnabled(false);
+    }
+
+    private void startCoinChoiceAnimation() {
+        final ImageView imgHeadsOrTails = (ImageView) findViewById(R.id.imgCoin);
+        final Animation coinChoice = AnimationUtils.loadAnimation(this, R.anim.animation_scale_up);
+
+        coinChoice.setAnimationListener(new Animation.AnimationListener() {
             @Override
-            public void onClick(View v) {
-                coin.flipCoin();
-                numberOfFlips++;
-                txtDisplay.setText(coin.toString());
+            public void onAnimationStart(Animation animation) {
 
-                if (!coin.isHeads()) {
-                    if (numberOfFlips == 1) {
-                        amount = 1;
-                    }
-                    else {
-                        amount = amount * 2;
-                    }
+            }
 
-                }
-                else {
-                    btnFlip.setEnabled(false);
-                }
+            @Override
+            public void onAnimationEnd(Animation animation) {
+//                imgHeadsOrTails.setVisibility(View.GONE);
+            }
 
-                txtNumberOfFlips.setText(String.valueOf(numberOfFlips));
-                txtAmount.setText(String.valueOf(amount));
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
             }
         });
 
-        btnReset = (Button) findViewById(R.id.btnReset);
-        btnReset.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                reset();
-            }
-        });
+        imgHeadsOrTails.setVisibility(View.VISIBLE);
+        imgHeadsOrTails.startAnimation(coinChoice);
+        imgHeadsOrTails.setEnabled(true);
+
+        SharedPreferences sharedPreferences = getSharedPreferences(SHAREDPREFFILE, MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt("playerWins", playerWin);
+        editor.putInt("computerWins", computerWin);
+        editor.putInt("numberOfRounds", numberOfRounds);
+        editor.commit();
     }
-
-    private void reset() {
-        amount = 0;
-        numberOfFlips = 0;
-        txtDisplay.setText("");
-        txtAmount.setText(String.valueOf(amount));
-        txtNumberOfFlips.setText(String.valueOf(numberOfFlips));
-        btnFlip.setEnabled(true);
-    }
-
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -106,10 +122,124 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_statistics) {
+            Intent i = new Intent(MainActivity.this, StatisticsActivity.class);
+            startActivity(i);
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void onClick(View v) {
+        isClicked = true;
+
+        btnHeads.setEnabled(false);
+        btnTails.setEnabled(false);
+
+        if (v.getId() == R.id.btnHeads) {
+            isHeads = true;
+            txtChoice.setText("You choose Heads");
+        }
+        else {
+            isHeads = false;
+            txtChoice.setText("You choose Tails");
+        }
+    }
+
+    class FlipCoin extends Handler {
+        private short mCoinImageValue = 0;
+        private ImageView mCoin;
+
+        public FlipCoin(ImageView coin, Animation animate) {
+            final Animation animation = animate;
+            mCoin = coin;
+
+            coin.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+//                    mCoin.setOnClickListener(null);
+                    mCoin.startAnimation(animation);
+                    mCoin.setEnabled(false);
+                    btnHeads.setEnabled(true);
+                    btnTails.setEnabled(true);
+
+                    handler.sendMessageDelayed(Message.obtain(handler, 0, 20), 50);
+                }
+            });
+        }
+
+        public void handleMessage(Message msg) {
+            if (mCoinImageValue == 0) {
+                mCoinImageValue = 1;
+            }
+            else {
+                mCoinImageValue = 0;
+            }
+            mCoin.setImageLevel(mCoinImageValue);
+
+            Integer flips = (Integer) msg.obj;
+            if (flips > 0) {
+                MainActivity.this.handler.sendMessageDelayed(Message.obtain(MainActivity.this.handler, 0, --flips), 50);
+            }
+            else {
+                int coinFlip;
+                coin.flipCoin();
+
+                numberOfRounds++;
+                txtResult.setText(coin.toString());
+
+                if (isClicked) {
+                    // if coin is heads and player picked heads
+                    if (coin.isHeads() && isHeads == true) {
+                        playerWin += 1;
+                        playerAmount += 10;
+                        computerAmount -= 10;
+                    }
+                    // if coin is heads and player picked tails
+                    else if (coin.isHeads() && isHeads == false) {
+                        computerWin += 1;
+                        playerAmount -= 10;
+                        computerAmount += 10;
+                    }
+                    //if coin is tails and player picked heads
+                    else if (!coin.isHeads() && isHeads == true) {
+                        computerWin += 1;
+                        playerAmount -= 10;
+                        computerAmount += 10;
+                    }
+                    //if coin is tails and player picked tails
+                    else {
+                        playerWin += 1;
+                        playerAmount += 10;
+                        computerAmount -= 10;
+                    }
+                }
+
+                if (coin.isHeads()) {
+                    coinFlip = 0;
+                }
+                else {
+                    coinFlip = 1;
+                }
+
+                txtPlayer.setText(String.valueOf(playerAmount));
+                txtComputer.setText(String.valueOf(computerAmount));
+
+                btnHeads.setEnabled(false);
+                btnTails.setEnabled(false);
+
+                System.out.println("Coin Value: " + String.valueOf(coinFlip));
+
+                mCoin.setImageLevel(coinFlip);
+
+                startCoinChoiceAnimation();
+
+
+            }
+
+
+
+        }
     }
 }

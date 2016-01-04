@@ -16,19 +16,16 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Large Text"
-        android:id="@+id/txtDisplay"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="68dp" />
+        android:id="@+id/txtResult"
+        android:layout_below="@+id/txtPlayer"
+        android:layout_centerHorizontal="true" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Large Text"
-        android:id="@+id/txtNumberOfFlips"
-        android:layout_alignParentTop="true"
+        android:id="@+id/txtPlayer"
+        android:layout_alignTop="@+id/txtComputer"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
@@ -36,8 +33,46 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Large Text"
-        android:id="@+id/txtAmount"
+        android:id="@+id/txtComputer"
+        android:layout_below="@+id/textView"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
+    <!--<Button-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="Flip Coin"-->
+        <!--android:id="@+id/btnFlip"-->
+        <!--android:layout_centerVertical="true"-->
+        <!--android:layout_centerHorizontal="true" />-->
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imgCoin"
+        android:src="@drawable/animation_flip"
+        android:longClickable="false"
+        android:maxHeight="100dp"
+        android:minHeight="100dp"
+        android:maxWidth="100dp"
+        android:minWidth="100dp"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Player"
+        android:id="@+id/textView"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Veritasium"
+        android:id="@+id/textView2"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
@@ -45,17 +80,30 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Flip Coin"
-        android:id="@+id/btnFlip"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
+        android:text="Heads"
+        android:id="@+id/btnHeads"
+        android:onClick="onClick"
+        android:layout_below="@+id/imgCoin"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:enabled="false" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Reset"
-        android:id="@+id/btnReset"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="47dp" />
+        android:text="Tails"
+        android:id="@+id/btnTails"
+        android:onClick="onClick"
+        android:layout_alignBottom="@+id/btnHeads"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:enabled="false" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/txtChoice"
+        android:layout_marginTop="28dp"
+        android:layout_below="@+id/txtResult"
+        android:layout_centerHorizontal="true" />
 </RelativeLayout>

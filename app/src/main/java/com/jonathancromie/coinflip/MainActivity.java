@@ -34,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
     ImageView imgCoin;
 
     private int numberOfRounds = 0;
+    private int numberOfHeads = 0;
+    private int numberOfTails = 0;
     private int playerAmount = 0;
     private int computerAmount = 10;
 
@@ -104,6 +106,8 @@ public class MainActivity extends AppCompatActivity {
         editor.putInt("playerWins", playerWin);
         editor.putInt("computerWins", computerWin);
         editor.putInt("numberOfRounds", numberOfRounds);
+        editor.putInt("numberOfHeads", numberOfHeads);
+        editor.putInt("numberOfTails", numberOfTails);
         editor.commit();
     }
 
@@ -218,9 +222,11 @@ public class MainActivity extends AppCompatActivity {
 
                 if (coin.isHeads()) {
                     coinFlip = 0;
+                    numberOfHeads += 1;
                 }
                 else {
                     coinFlip = 1;
+                    numberOfTails += 1;
                 }
 
                 txtPlayer.setText(String.valueOf(playerAmount));
